@@ -1,0 +1,195 @@
+index.html:
+
+<html>
+ <head>
+ <title>exam portal</title>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ </head>
+ <body>
+
+ <div style="text-align: center">
+ <h3>ESEC ONLINE EXAM PORTAL -Login </h3>
+ <hr>
+ <form method ="get" action="acceptuser.jsp">
+ Username <input type="text" name="uname" value=""><br><br>
+ Password <input type="password" name="pass" value=""><br>
+
+ <button type="submit">LOGIN </button>
+ </form>
+ </div>
+ </body>
+</html>
+
+examclient.html:
+
+<html>
+<head>
+<title>Online Exam Client</title>
+</head>
+<body>
+<h2 style="text-align:center">ONLINE EXAMINATION</h2>
+<h3>Answer the following questions (5 marks for each correct answer)</h3>
+<hr/>
+<form name="examForm" method="post" action="ExamServer.jsp">
+1.Who is called as the father of computer?<br/>
+<input type="radio" name="ans1" value="Sachin">Sachin
+<input type="radio" name="ans1" value="Stuart">Stuart
+<input type="radio" name="ans1" value="Charles Babbage">Charles Babbage
+<input type="radio" name="ans1" value="Napier">Napier
+<br/><br/>
+2.C++ was developed by?<br/>
+<input type="radio" name="ans2" value="Dennis Ritchie">Dennis Ritchie
+<input type="radio" name="ans2" value="None">None
+<input type="radio" name="ans2" value="David Ritchie">David Ritchie
+<input type="radio" name="ans2" value="John">John
+<br/><br/>
+3.C was developed by?<br/>
+<input type="radio" name="ans3" value="Dennis Ritchie">Dennis Ritchie
+<input type="radio" name="ans3" value="Stroustrup">Stroustrup
+<input type="radio" name="ans3" value="David Ritchie">David Ritchie
+<input type="radio" name="ans3" value="Charles Babbage">Charles Babbage
+<br/><br/>
+
+<input type="submit" value="Check Your Result"/>
+</form>
+</body>
+</html>
+
+
+acceptuser.jsp
+
+<%@ page import="java.sql.*"%>
+<%@ page import="java.util.*"%>
+<%!
+ Connection con;
+ PreparedStatement ps1, ps2;
+ public void jspInit()
+ {
+ try
+ {
+  Class.forName("org.apache.derby.jdbc.ClientDriver").newInstance();
+ con = DriverManager.getConnection("jdbc:derby://localhost:1527/iplab","ROOT","123");
+  ps1 = con.prepareStatement("select count(*) from USERS where username = ? and password=?");
+ ps2 = con.prepareStatement("select * from USERS");
+ }
+ catch(Exception ex)
+ {
+ ex.printStackTrace();
+}
+ }
+%>
+<%
+ String param = request.getParameter("s1");
+ if(param =="link")
+ {
+ ResultSet rs = ps2.executeQuery();
+ out.println("<table>");
+ while(rs.next())
+ {
+ out.println("<tr>");
+ out.println("<td>"+rs.getString(1)+"</td>");
+ out.println("<td>"+rs.getString(2)+"</td");
+ out.println("</tr>");
+ }
+ out.println("</table>");
+ rs.close();
+ }
+ else
+ {
+ String user = request.getParameter("uname");
+ String pass = request.getParameter("pass");
+ //set form data as param value
+ ps1.setString(1,user);
+ ps1.setString(2,pass);
+ //excute the query
+ ResultSet rs = ps1.executeQuery();
+ int cnt = 0;
+ if (rs.next())
+ cnt = rs.getInt(1);
+ if(cnt == 0)
+ out.println("<b><i><font color=red>Invalid credential</fonr></i></b>");
+ else
+ {
+ out.println("<form><fieldset style= width:25%; >");
+ out.println("<b><i><font color=red>valid credential..</fonr></i></b><br>");
+ out.println("<b><i><a href=examclient.html><font size=6 color=blue>Click Here to take test</font></i></a></b>");
+ out.println("</fieldset></form>");
+ }
+ }
+%>
+<%!
+ public void jspDestroy()
+ {
+ try
+ {
+ //colse
+ps1.close();
+ ps2.close();
+ con.close();
+ }
+ catch(Exception ex)
+ {
+ ex.printStackTrace();
+ }
+ }
+%>
+
+ExamServer.jsp:
+
+<%@page contentType="text/html"  language="java"  import="java.sql.*"%>
+<html>
+<head>
+<title>Online Exam Server</title>
+<style type="text/css">
+ body{background-color:white;font-family:courier;color:blue}
+</style>
+</head>
+<body>
+<h2 style="text-align:center">ONLINE EXAMINATION</h2>
+<p>
+<a href="examclient.html">Back To Main Page</a>
+</p>
+<hr/>
+<%
+String str1=request.getParameter("ans1");
+String str2=request.getParameter("ans2");
+String str3=request.getParameter("ans3");
+int mark=0;
+Class.forName("org.apache.derby.jdbc.ClientDriver").newInstance();
+Connection
+con=DriverManager.getConnection("jdbc:derby://localhost:1527/iplab","ROOT","123");
+Statement stmt=con.createStatement();
+ResultSet rs=stmt.executeQuery("SELECT * FROM examTab");
+while(rs.next())
+{
+ String dbans1=rs.getString(1);
+ String dbans2=rs.getString(2);
+ String dbans3=rs.getString(3);
+ if(str1.equals(dbans1))
+ {
+ mark=mark+5;
+ }
+ if(str2.equals(dbans2))
+ {
+ mark=mark+5;
+ }
+ if(str3.equals(dbans3))
+ {
+ mark=mark+5;
+ }
+}
+if(mark>=10)
+{
+ out.println("<h4>Your Mark Is : "+mark+"</h4>");
+ out.println("<h3>Congratulations....! You Are Eligible For The Next Round...</h3>");
+}
+else
+{
+ out.println("<h4>Your Mark is : "+mark+"</h4>");
+ out.println("<h3>Sorry....!! You Are Not Eligible For The Next Round...</h3>");
+}
+%>
+</form>
+</body>
+</html>
